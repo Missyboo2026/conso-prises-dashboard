@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b3d24">
+<title>Conso des prises</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f4f6fa;color:#0f172a;padding-bottom:2rem;-webkit-tap-highlight-color:transparent}
+.hero{background:linear-gradient(140deg,#0b5e3b 0%,#15803d 55%,#22c55e 100%);color:#fff;border-radius:0 0 28px 28px;padding:1.4rem 1.2rem 2.6rem}
+.hero .t{font-size:.8rem;opacity:.85;text-transform:uppercase;letter-spacing:.05em}
+.hero .v{font-size:2.6rem;font-weight:800;margin:.1rem 0}
+.hero .v small{font-size:1rem;font-weight:500;opacity:.85}
+.hero .d{font-size:.78rem;opacity:.8}
+.pill{display:inline-block;background:rgba(255,255,255,.16);border-radius:20px;padding:.35rem .8rem;font-size:.72rem;margin-top:.6rem}
+.wrap2{padding:0 1rem;max-width:480px;margin:0 auto}
+.seg{display:flex;gap:.5rem;margin:-1.4rem 0 1rem;justify-content:center;flex-wrap:wrap}
+.seg button{padding:.6rem 1.1rem;border:none;border-radius:24px;background:#fff;color:#15803d;font-size:.85rem;font-weight:600;box-shadow:0 4px 14px rgba(0,60,140,.12)}
+.seg button.on{background:#15803d;color:#fff}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.2rem}
+.card{background:#fff;border-radius:18px;padding:.9rem 1rem;box-shadow:0 2px 10px rgba(0,40,100,.06)}
+.card .lab{font-size:.72rem;color:#15803d;font-weight:700}
+.card .val{font-size:1.25rem;font-weight:800;margin-top:.15rem;color:#0b3d24;line-height:1.25}
+.card .val small{font-size:.75rem;font-weight:500;color:#7b8aa0}
+h2{font-size:.85rem;color:#15803d;margin:1.2rem 0 .5rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.dnav{display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px;padding:.5rem .6rem;margin-bottom:.5rem;box-shadow:0 2px 10px rgba(0,40,100,.06)}
+.dnav button{background:#e7f6ec;color:#15803d;border:none;border-radius:10px;width:2.6rem;height:2.2rem;font-size:1.1rem;font-weight:700}
+.dnav .d{font-weight:700;font-size:.92rem;color:#0b3d24}
+.bars{display:flex;align-items:flex-end;gap:2px;height:9rem;background:#fff;border-radius:18px;padding:.9rem .5rem .4rem;box-shadow:0 2px 10px rgba(0,40,100,.06)}
+.bcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.bar{background:linear-gradient(180deg,#22c55e,#15803d);border-radius:4px 4px 0 0;min-height:3px;width:100%;position:relative}
+.bar.hot{background:linear-gradient(180deg,#ffb703,#f48c06)}
+.lab{font-size:.55rem;color:#7b8aa0;text-align:center;margin-top:3px}
+.note{color:#7b8aa0;font-size:.74rem;text-align:center;margin-top:.5rem;font-weight:600}
+.dbars{display:flex;align-items:flex-end;gap:3px;height:7rem;background:#fff;border-radius:18px;padding:.9rem .4rem .4rem;box-shadow:0 2px 10px rgba(0,40,100,.06)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,40,100,.06)}
+th{color:#15803d;font-weight:700;font-size:.68rem;text-transform:uppercase;padding:.7rem .8rem .4rem;text-align:left}
+th.r{text-align:right}
+td{padding:.6rem .8rem;color:#0b3d24;border-top:1px solid #eef2f8}
+td.r{text-align:right;font-weight:600}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="t">Ma conso des prises</div>
+  <div class="v" id="today">— <small>kWh</small></div>
+  <div class="d" id="dayLab">Aujourd'hui</div>
+  <div class="pill" id="gen"></div>
+</div>
+<div class="wrap2">
+  <div class="seg" id="seg"></div>
+  <div class="cards">
+    <div class="card"><div class="lab">Hier</div><div class="val" id="yest">—</div></div>
+    <div class="card"><div class="lab">7 derniers jours</div><div class="val" id="w7">—</div></div>
+    <div class="card"><div class="lab">Mois en cours</div><div class="val" id="mois">—</div></div>
+    <div class="card"><div class="lab">Prise la + gourmande <small>(7j)</small></div><div class="val" id="top">—</div></div>
+  </div>
+
+  <h2>Heure par heure</h2>
+  <div class="dnav">
+    <button onclick="shiftDay(-1)">‹</button>
+    <div class="d" id="dayLabel"></div>
+    <button onclick="shiftDay(1)">›</button>
+  </div>
+  <div class="bars" id="hbars"></div>
+  <div class="note" id="hnote"></div>
+
+  <h2>30 derniers jours</h2>
+  <div class="dbars" id="dbars"></div>
+
+  <h2>Détail des derniers jours</h2>
+  <table><thead><tr><th>Jour</th><th>Prise</th><th class="r">kWh</th></tr></thead>
+  <tbody id="tbody"></tbody></table>
+</div>
+
+<script>
+const D={"generated": "28/10/2026 12:01", "devices": [{"id": "bf64a4e23a6e86e6fbhseu", "name": "Solaire"}, {"id": "bf826607347fee9b01lfjm", "name": "Ballon 200l ancien logement"}, {"id": "bfc78d7cb3be9e943evunl", "name": "vmc chaleur"}], "hourly": [{"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-24 15:00", "k": 0.0016, "w": 8.0, "m": 11.8}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-24 16:00", "k": 0.0018, "w": 2.0, "m": 51.8}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 06:00", "k": 0.0001, "w": 2.7, "m": 2.4}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 07:00", "k": 0.0104, "w": 10.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 08:00", "k": 0.0538, "w": 53.8, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 09:00", "k": 0.5454, "w": 545.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 10:00", "k": 0.5953, "w": 595.3, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 11:00", "k": 0.7223, "w": 722.3, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 12:00", "k": 0.5341, "w": 534.1, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 13:00", "k": 0.3588, "w": 358.8, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 14:00", "k": 0.3701, "w": 370.1, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 15:00", "k": 0.1265, "w": 126.5, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 16:00", "k": 0.0171, "w": 17.1, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25 17:00", "k": 0.0, "w": 0.0, "m": 26.4}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 06:00", "k": 0.0005, "w": 4.4, "m": 7.5}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 07:00", "k": 0.0094, "w": 9.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 08:00", "k": 0.0358, "w": 35.8, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 09:00", "k": 0.0719, "w": 71.9, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 10:00", "k": 0.1492, "w": 149.2, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 11:00", "k": 0.0926, "w": 92.6, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 12:00", "k": 0.1219, "w": 121.9, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 13:00", "k": 0.1496, "w": 149.6, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 14:00", "k": 0.1248, "w": 124.8, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 15:00", "k": 0.0384, "w": 38.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 16:00", "k": 0.0049, "w": 4.9, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26 17:00", "k": 0.0, "w": 0.0, "m": 20.6}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 06:00", "k": 0.0008, "w": 4.6, "m": 10.2}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 07:00", "k": 0.0212, "w": 21.2, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 08:00", "k": 0.075, "w": 75.0, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 09:00", "k": 0.1274, "w": 127.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 10:00", "k": 0.082, "w": 82.0, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 11:00", "k": 0.1582, "w": 158.2, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 12:00", "k": 0.1746, "w": 174.9, "m": 59.9}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 13:00", "k": 0.2554, "w": 255.4, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 14:00", "k": 0.2452, "w": 245.2, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 15:00", "k": 0.0731, "w": 73.1, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 16:00", "k": 0.0127, "w": 12.7, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27 17:00", "k": 0.0, "w": 0.0, "m": 22.2}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 06:00", "k": 0.0014, "w": 4.9, "m": 17.1}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 07:00", "k": 0.0177, "w": 17.7, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 08:00", "k": 0.0503, "w": 50.3, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 09:00", "k": 0.4712, "w": 471.2, "m": 60.0}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 10:00", "k": 0.4574, "w": 611.0, "m": 44.9}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28 11:00", "k": 0.3565, "w": 605.3, "m": 35.3}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-21 21:00", "k": 1.2484, "w": 1681.1, "m": 44.6}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-21 22:00", "k": 0.0, "w": 0.0, "m": 15.4}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-22 21:00", "k": 1.2509, "w": 1684.6, "m": 44.6}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-22 22:00", "k": 0.0, "w": 0.0, "m": 15.4}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-24 21:00", "k": 1.2436, "w": 2487.1, "m": 30.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-24 22:00", "k": 1.2175, "w": 2435.1, "m": 30.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-24 23:00", "k": 1.198, "w": 1210.6, "m": 59.4}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-25 00:00", "k": 0.0, "w": 0.0, "m": 0.3}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-25 22:00", "k": 1.2344, "w": 2461.8, "m": 30.1}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-25 23:00", "k": 1.197, "w": 1329.2, "m": 54.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26 00:00", "k": 0.0, "w": 0.0, "m": 6.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26 10:00", "k": 1.2216, "w": 1898.0, "m": 38.6}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26 11:00", "k": 0.0, "w": 0.0, "m": 21.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26 22:00", "k": 1.2657, "w": 1286.5, "m": 59.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26 23:00", "k": 0.0, "w": 0.0, "m": 1.0}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-27 22:00", "k": 1.2557, "w": 2511.5, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-21 10:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-21 11:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22 01:00", "k": 0.0132, "w": 26.4, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22 04:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22 05:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22 08:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22 11:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 01:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 03:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 04:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 06:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 07:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 08:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23 11:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 01:00", "k": 0.0132, "w": 26.4, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 02:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 03:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 06:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 07:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 08:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 09:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24 11:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 02:00", "k": 0.0134, "w": 26.7, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 03:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 05:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 08:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 09:00", "k": 0.0132, "w": 26.4, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 10:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25 12:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 02:00", "k": 0.0132, "w": 26.4, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 03:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 04:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 05:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 06:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 07:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 08:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 09:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26 12:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 02:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 03:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 04:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 05:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 07:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 11:00", "k": 0.0131, "w": 26.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27 12:00", "k": 0.0, "w": 0.0, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 02:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 04:00", "k": 0.0126, "w": 25.3, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 05:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 06:00", "k": 0.0126, "w": 25.1, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 08:00", "k": 0.0128, "w": 25.6, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 09:00", "k": 0.013, "w": 25.9, "m": 30.0}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28 10:00", "k": 0.0131, "w": 26.1, "m": 30.0}], "daily": [{"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-24", "k": 0.0034}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-25", "k": 3.3339}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-26", "k": 0.799}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-27", "k": 1.2256}, {"d": "bf64a4e23a6e86e6fbhseu", "p": "2026-10-28", "k": 1.3545}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-21", "k": 1.2484}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-22", "k": 1.2509}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-24", "k": 3.6591}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-25", "k": 2.4314}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-26", "k": 2.4873}, {"d": "bf826607347fee9b01lfjm", "p": "2026-10-27", "k": 1.2557}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-21", "k": 0.013}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-22", "k": 0.0517}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-23", "k": 0.0778}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-24", "k": 0.0906}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-25", "k": 0.0781}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-26", "k": 0.103}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-27", "k": 0.0779}, {"d": "bfc78d7cb3be9e943evunl", "p": "2026-10-28", "k": 0.0897}]};
+const days={};       // 'YYYY-MM-DD' -> {devId: kwh}
+const hours={};      // 'YYYY-MM-DD' -> {devId: {h: kwh}}
+D.daily.forEach(r=>{(days[r.p]=days[r.p]||{})[r.d]=r.k});
+D.hourly.forEach(r=>{const d=r.p.slice(0,10),h=+r.p.slice(11,13);(hours[d]=hours[d]||{});(hours[d][r.d]=hours[d][r.d]||{})[h]=r.k});
+const allDays=Object.keys(days).sort();
+let cur=allDays[allDays.length-1];
+let sel="all";
+
+function selDev(){return sel==="all"?null:sel}
+function kwhDay(d,dev){let s=0;const o=days[d]||{};for(const k in o){if(!dev||k===dev)s+=o[k]}return s}
+function fmt(k){return (Math.round(k*100)/100).toLocaleString('fr-FR')}
+function devName(id){return (D.devices.find(x=>x.id===id)||{name:id}).name}
+
+function renderSeg(){
+  const s=document.getElementById('seg');s.innerHTML='';
+  const mk=(id,name)=>{const b=document.createElement('button');b.textContent=name;b.className=sel===id?'on':'';b.onclick=()=>{sel=id;renderAll()};s.appendChild(b)};
+  mk('all','Toutes');
+  D.devices.forEach(d=>mk(d.id,d.name.length>12?d.name.slice(0,12)+'…':d.name));
+}
+function renderCards(){
+  const dev=selDev();
+  const last=allDays[allDays.length-1];
+  const y=allDays[allDays.length-2];
+  const m=last?last.slice(0,7):null;
+  let w7=0,mk=0,top={n:null,k:0};
+  allDays.slice(-7).forEach(d=>w7+=kwhDay(d,dev));
+  allDays.forEach(d=>{if(m&&d.slice(0,7)===m)mk+=kwhDay(d,dev)});
+  if(!dev){ // prise la plus gourmande sur 7 jours
+    const tot={};allDays.slice(-7).forEach(d=>{const o=days[d]||{};for(const k in o)tot[k]=(tot[k]||0)+o[k]});
+    for(const k in tot){if(tot[k]>top.k)top={n:devName(k),k:tot[k]}}
+  }else{top={n:'sélection',k:w7}}
+  document.getElementById('gen').textContent='Mise à jour : '+D.generated;
+  document.getElementById('today').innerHTML=(last?fmt(kwhDay(last,dev)):'—')+' <small>kWh</small>';
+  document.getElementById('dayLab').textContent='Aujourd\u2019hui \u00b7 '+(sel==='all'?'toutes les prises':devName(sel));
+  document.getElementById('yest').innerHTML=(y?fmt(kwhDay(y,dev)):'—')+' <small>kWh</small>';
+  document.getElementById('w7').innerHTML=fmt(w7)+' <small>kWh</small>';
+  document.getElementById('mois').innerHTML=fmt(mk)+' <small>kWh</small>';
+  document.getElementById('top').innerHTML=top.n?top.n+'<br>'+fmt(top.k)+' <small>kWh</small>':'—';
+}
+function renderHours(){
+  const dev=selDev();
+  const o=hours[cur]||{};
+  const arr=[];for(let h=0;h<24;h++){let s=0;for(const k in o){if(!dev||k===dev)s+=(o[k][h]||0)}arr.push(s)}
+  const mx=Math.max(...arr,0.01);
+  const wrap=document.getElementById('hbars');wrap.innerHTML='';
+  const sum=arr.reduce((a,b)=>a+b,0);
+  arr.forEach((v,h)=>{
+    const c=document.createElement('div');c.className='bcol';
+    const b=document.createElement('div');b.className='bar'+(v>mx*0.55?' hot':'');
+    b.style.height=Math.max(3,Math.round(v/mx*100))+'%';
+    if(v>0)b.title=h+'h : '+fmt(v)+' kWh';
+    c.appendChild(b);
+    const l=document.createElement('div');l.className='lab';l.textContent=(h%3===0?h:'');
+    c.appendChild(l);wrap.appendChild(c);
+  });
+  document.getElementById('dayLabel').textContent=(cur||'—')+' \u00b7 '+fmt(sum)+' kWh';
+  const pk=arr.indexOf(Math.max(...arr));
+  document.getElementById('hnote').textContent=sum>0&&arr[pk]>0?('Pic \u00e0 '+pk+'h'):('Aucune conso enregistr\u00e9e ce jour');
+}
+function renderDaily(){
+  const dev=selDev();
+  const ds=allDays.slice(-30);
+  const vals=ds.map(d=>kwhDay(d,dev));
+  const mx=Math.max(...vals,0.01);
+  const wrap=document.getElementById('dbars');wrap.innerHTML='';
+  ds.forEach((d,i)=>{
+    const c=document.createElement('div');c.className='bcol';
+    const b=document.createElement('div');b.className='bar';
+    b.style.height=Math.max(3,Math.round(vals[i]/mx*100))+'%';
+    b.title=d+' : '+fmt(vals[i])+' kWh';
+    c.appendChild(b);
+    const l=document.createElement('div');l.className='lab';
+    const dd=new Date(d+'T12:00:00');
+    l.textContent=(i%5===0||i===ds.length-1)?dd.toLocaleDateString('fr-FR',{day:'2-digit'}):'';
+    c.appendChild(l);wrap.appendChild(c);
+  });
+}
+function renderTable(){
+  const dev=selDev();
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  allDays.slice(-8).reverse().forEach(d=>{
+    const o=days[d]||{};
+    for(const k in o){
+      if(dev&&k!==dev)continue;
+      const tr=document.createElement('tr');
+      const dd=new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'2-digit'});
+      tr.innerHTML='<td>'+dd+'</td><td>'+devName(k)+'</td><td class="r">'+fmt(o[k])+'</td>';
+      tb.appendChild(tr);
+    }
+  });
+  if(!tb.rows.length)tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:#7b8aa0">Pas encore de données</td></tr>';
+}
+function shiftDay(n){
+  const i=allDays.indexOf(cur)+n;
+  if(i>=0&&i<allDays.length){cur=allDays[i];renderHours()}
+}
+function renderAll(){renderSeg();renderCards();renderHours();renderDaily();renderTable()}
+renderAll();
+</script>
+</body>
+</html>
